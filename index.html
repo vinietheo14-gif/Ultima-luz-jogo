@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="google-site-verification" content="ULB4YVXby7pa_N3n2bKwTw1bA6V61TPZlwOdJwSgihE">
+<title>Última Luz</title>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="shortcut icon" href="favicon.ico">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#14141b">
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
+</head><body>
+
+<div id="menu" class="scr">
+ <div class="mini-tools" id="home-tools">
+  <button id="home-menu" class="icon-btn" type="button" aria-label="Abrir menu" title="Menu">☰</button>
+  <button id="home-sound" class="icon-btn" type="button" aria-label="Ativar ou desativar som" title="Som">♫</button>
+ </div>
+ <img src="lanterna.png" alt="Lanterna" style="height:104px;width:auto;margin:0 auto;image-rendering:pixelated;filter:drop-shadow(0 0 16px #ffe7a066)">
+ <h1>Última Luz</h1>
+ <canvas id="ln" width="320" height="76" style="width:100%;max-width:320px;margin:0 auto;image-rendering:pixelated"></canvas>
+ <p>Ligue os geradores e fuja do caçador. Sem cadastro: nada fica salvo.</p>
+ <div class="row"><input id="nm" maxlength="12" placeholder="Seu nome" autocomplete="off"><button id="rn" class="alt" title="Sortear nome" style="padding:12px 16px">🎲</button></div>
+ <button id="chb" class="alt">Personagens</button>
+ <button id="mk">Criar sala</button>
+ <div class="row"><input id="cd" maxlength="4" placeholder="CÓDIGO" autocomplete="off"><button id="jn">Entrar</button></div>
+ <p id="msg"></p>
+</div>
+
+<div id="lobby" class="scr hide">
+ <p>Código da sala (mande pros amigos)</p>
+ <div id="code"></div>
+ <ul id="pl"></ul>
+ <button id="st">Iniciar partida</button>
+ <p id="lm"></p>
+ <p>O caçador é sorteado: quanto mais você joga, maior a chance. Com 1 jogador, a IA é o caçador. Até 5 jogadores.</p>
+ <button id="out" class="alt">Sair</button>
+</div>
+
+<div id="chars" class="scr hide">
+ <h2>Personagens</h2>
+ <p>Você usa o sobrevivente escolhido quando for sobrevivente, e o assassino quando for sorteado caçador.</p>
+ <h3 style="margin:4px 0">Sobreviventes</h3><div id="csv"></div>
+ <h3 style="margin:4px 0">Assassinos</h3><div id="cki"></div>
+ <h3 style="margin:4px 0">Passivas de sobrevivente (até 2)</h3><div id="cps"></div>
+ <h3 style="margin:4px 0">Passivas de assassino (até 2)</h3><div id="cph"></div>
+ <button id="cok">Confirmar</button>
+</div>
+
+<div id="ctrl" class="scr hide">
+ <h2>Controles</h2>
+ <h3 style="margin:4px 0">Teclado (PC)</h3>
+ <p>Toque num botão e aperte a nova tecla. Backspace limpa, Esc cancela. Cada ação aceita 2 teclas.</p>
+ <div id="kbl"></div><p id="kbm" style="min-height:18px"></p>
+ <button id="kbr" class="alt">Restaurar teclas</button>
+ <h3 style="margin:4px 0">Celular (HUD)</h3>
+ <p>Arraste joystick e botões, mude tamanho e transparência. Vale para cada orientação da tela.</p>
+ <button id="mvb" class="alt"></button><button id="hdo">Editar HUD</button><button id="hdr" class="alt">Restaurar HUD</button><p id="hdm" style="min-height:18px"></p>
+ <button id="cob">Voltar</button>
+</div>
+
+<div id="hed" class="hide"><div class="pvcv">Tela do jogo</div>
+ <div id="hpn"><b id="hlb"></b>
+  <label>Tamanho<input type="range" id="hsz" min="60" max="160"></label>
+  <label>Opacidade<input type="range" id="hop" min="30" max="100"></label>
+  <div class="row"><button id="hsv">Salvar</button><button id="hcn" class="alt">Cancelar</button></div></div></div>
+
+<div id="gv" class="hide">
+ <div id="hud"><span id="hg"></span><span id="hl"></span></div>
+ <div id="game-tools" class="mini-tools">
+  <button id="game-menu" class="icon-btn" type="button" aria-label="Abrir menu" title="Menu">☰</button>
+  <button id="game-sound" class="icon-btn" type="button" aria-label="Ativar ou desativar som" title="Som">♫</button>
+ </div>
+ <div id="wrap"><canvas id="c" width="640" height="480"></canvas>
+  <div id="mg" class="hide"><h2 id="mgt"></h2><div id="mga"></div><button id="mx" class="alt">Sair do gerador</button></div>
+  <div id="ov" class="hide"><h2 id="ot"></h2><p id="op"></p><button id="back">Jogar novamente</button></div></div>
+ <div id="ctl"><div id="pad"><div id="knob"></div></div><div id="dpad" class="hide"><i data-d="u">▲</i><i data-d="l">◀</i><i data-d="r">▶</i><i data-d="d">▼</i></div><div id="bt"><button id="run">▶</button><button id="act">AÇÃO</button><button id="atk" class="hide">ATACAR</button><button id="it">KIT</button><button id="drop" aria-label="Soltar kit médico" title="Soltar kit médico">⬇</button><button id="sk">✦</button></div></div>
+</div>
+
+<div id="settings-menu" class="hide" role="dialog" aria-modal="true" aria-label="Menu do jogo">
+ <div id="settings-panel">
+  <div class="settings-head"><b>Menu</b><button id="settings-close" class="icon-btn" type="button" aria-label="Fechar menu">×</button></div>
+  <button id="settings-controls" class="settings-action" type="button"><span>🎮</span> Controles</button>
+  <button id="settings-fullscreen" class="settings-action" type="button"><span>⛶</span> Tela cheia</button>
+  <button id="settings-sound" class="settings-action" type="button"><span id="settings-sound-icon">🔊</span> <span id="settings-sound-label">Som ligado</span></button>
+  <button id="settings-exit" class="settings-action exit-action" type="button"><span>↩</span> Sair do jogo</button>
+ </div>
+</div>
+
+<script src="config.js"></script>
+<script src="characters.js"></script>
+<script src="maps.js"></script>
+<script src="themes.js"></script>
+<script src="network.js"></script>
+<script src="sim.js"></script>
+<script src="minigames.js"></script>
+<script src="render.js"></script>
+<script src="audio.js"></script>
+<script src="settings.js"></script>
+<script src="input.js"></script>
+<script src="main.js"></script>
+</body></html>
