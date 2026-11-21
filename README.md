@@ -106,20 +106,6 @@ Por isso:
 - Em algumas redes (principalmente dados móveis), a conexão direta pode falhar. Se isso acontecer, tente por Wi-Fi.
 - O anfitrião joga com menos atraso que os outros.
 
-## Como colocar no ar
-
-O projeto **não usa pastas**: todos os arquivos ficam juntos na raiz, com o `index.html` no meio deles. Isso facilita enviar tudo de uma vez pelo celular. Os arquivos de imagem e som têm prefixo (`sprite-`, `tex-`, `som-`) pra não se misturarem com o código.
-
-**Vercel (pelo GitHub):**
-1. Crie um repositório no GitHub e use **Add file → Upload files**. No celular, selecione todos os arquivos de uma vez (ou envie em 2 ou 3 lotes) e confirme com **Commit changes**.
-2. Na Vercel, toque em **Add New → Project**, escolha o repositório e faça **Deploy**. Não precisa configurar nada (nenhum comando de build). Se pedir um *Framework Preset*, use **Other**.
-3. Use o link gerado. Cada vez que você enviar um arquivo novo pro GitHub, a Vercel atualiza o site sozinha.
-
-**Netlify:** em `app.netlify.com/drop`, arraste os arquivos (ou o `.zip`) e use o link gerado.
-
-**GitHub Pages:** envie todos os arquivos pro repositório e, em *Settings → Pages*, escolha a branch `main`.
-
-Pra atualizar, substitua só os arquivos que mudaram. O nome do arquivo precisa ficar igual.
 
 ## Tecnologias
 
