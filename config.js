@@ -12,5 +12,5 @@ let peer,isHost=false,me='',code='',conns={},lobby={},wts={},G=null,MP=null,inGa
 const KIT=new Image();KIT.src='tex-medkit.png';
 const LAN=new Image();LAN.src='lanterna-small.png';
 
-// Passivas escolhidas antes da partida (q.pk = índices). Sobrevivente: 0 Pulmões, 1 Mãos rápidas, 2 Sem pressa, 3 Olho de lince, 4 Pele grossa, 5 Adrenalina, 6 Mãos de médico. Assassino: 0 Faro, 1 Passo firme, 2 Predador, 3 Arrombador, 4 Sede de sangue.
+// Passivas escolhidas antes da partida (q.pk = índices). Sobrevivente: 0 Pulmões, 1 Sem pressa, 2 Olho de lince, 3 Pele grossa, 4 Adrenalina, 5 Mãos de médico. Assassino: 0 Faro, 1 Passo firme, 2 Predador, 3 Arrombador, 4 Sede de sangue.
 function hasPk(q,i){return !!(q&&q.pk&&q.pk.indexOf(i)>=0)}

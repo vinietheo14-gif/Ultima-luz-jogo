@@ -6,7 +6,7 @@ function inp(){
  if(kDown('up'))iy-=1;if(kDown('down'))iy+=1;
  const m=Math.hypot(ix,iy);if(m>1){ix/=m;iy/=m}return{x:ix,y:iy,r:runH||kDown('run')};
 }
-function useKit(){if(inGame&&G&&!G.over)tx({t:'it'})}
+function useKit(){if(inGame&&G&&!G.over){const m=G.pl[me];tx({t:m&&m.role==='h'?'md':'it'})}}
 function dropKit(){if(inGame&&G&&!G.over)tx({t:'dk'})}
 function useSk(){if(inGame&&G&&!G.over&&!mgI)tx({t:'sk'})}
 function act(){

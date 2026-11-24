@@ -2,7 +2,7 @@
 // ---------- MINIGAMES ----------
 const MGN=['Clique!','Acerte os pontos!','Barriga vazia!'];
 function openMG(k,carry=0,door=0){
- const me_=G&&G.pl[me];if(me_&&me_.role==='s'&&hasPk(me_,1))carry=Math.max(carry,.15); // Mãos rápidas: começa com 15% pronto
+ const me_=G&&G.pl[me];
  const q=G.pl[me],cu=q&&q.cu;
  mgI={k,p:0,d:1,spd:1.2,h:0,f:0,need:cu?2:3,tot:cu?4:6,tg:cu?60:100};if(door)mgI.tg=hasPk(me_,3)?25:36;$('mx').textContent=door?'Desistir':'Sair do gerador';
  const a=$('mga');a.innerHTML='';$('mgt').textContent=door?'Quebre a porta!':MGN[k];$('mg').classList.remove('hide');
@@ -12,7 +12,7 @@ function openMG(k,carry=0,door=0){
  if(k===2){mgI.f=carry*mgI.tg;a.innerHTML='<div id="tr"><div id="fl"></div></div><button id="mb">'+(door?'QUEBRAR!':'COMER!')+'</button>'}
  const mb=$('mb');if(mb)mb.onpointerdown=e=>{e.preventDefault();mgPress()};
 }
-function mgInfo(){$('mi').textContent=(Math.floor(mgI.h*10)/10)+'/'+mgI.need}
+function mgInfo(){$('mi').textContent=Math.floor(mgI.h+1e-6)+'/'+mgI.need}
 function dotOff(b){b.remove();if(!$('mga').querySelector('.dot'))mgWin()}
 function mgProg(){
  if(mgI.k===0)return Math.min(.99,mgI.h/mgI.need);

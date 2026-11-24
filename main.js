@@ -1,8 +1,16 @@
 // Loop principal e inicialização
+let simAcc=0,lastPos=0,lastFull=0;
 function loop(t){
- const dt=Math.min(.05,(t-lastT)/1000);lastT=t;
+ const real=Math.min(.25,(t-lastT)/1000),dt=Math.min(.05,real);lastT=t;
  if(inGame&&G){
-  if(isHost){if(G.pl.host)G.pl.host.inp=inp();sim(dt);if(G.over)chkRdy();if(G){acc+=dt;if(acc>=.05){acc=0;sendAll({t:'s',g:G})}}}
+  if(isHost){
+   if(G.pl.host)G.pl.host.inp=inp();
+   // Simulação em passos fixos de 1/60 s: o jogo não fica em câmera lenta se o aparelho do anfitrião cair de FPS
+   simAcc+=real;let n=0;
+   while(simAcc>=1/60&&n<6&&G){sim(1/60);simAcc-=1/60;n++;if(G&&G.over)chkRdy()}
+   if(n>=6)simAcc=0;
+   if(G){const now=performance.now();if(now-lastPos>=50){lastPos=now;const full=now-lastFull>=120;if(full)lastFull=now;netTick(full)}}
+  }
   if(G){syncMG();mgTick(dt)}
  }
  draw();requestAnimationFrame(loop);

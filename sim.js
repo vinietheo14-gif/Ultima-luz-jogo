@@ -9,9 +9,10 @@ function updateStamina(e,dt,max,regen,isRunning){
  if(isRunning){e.sta=Math.max(0,e.sta-STA_DRAIN*dt);if(e.sta<=0){e.sta=0;e.fatigue=FATIGUE_TIME;e.rl=1}}
  else e.sta=Math.min(max,e.sta+regen*dt);
 }
-const KILLER_DAMAGE=[20,15,15,17,14]; // Açougueiro, Sombra, Infectado, Armadilheiro, Anjo
+const KILLER_DAMAGE=[20,15,15,17,16]; // Açougueiro, Sombra, Infectado, Armadilheiro, Anjo (golpe de perto)
+const TENT_DMG=14; // Anjo: golpe de tentáculo à distância
 // Golpe do assassino: 0,45 s de preparação (área vermelha), depois acerta. Guarda do Bombeiro: 2,5 s, quase parado.
-const ATK_WINDUP=.45,ATK_CD=1.45,WU_SLOW=.35,GUARD_TIME=2.5,GUARD_SLOW=.12,ANJO_RANGE=150,ANJO_HALF=16,SWEEP_R=85;
+const ATK_WINDUP=.45,ATK_CD=1.45,WU_SLOW=.35,GUARD_TIME=2.5,GUARD_SLOW=.12,ANJO_RANGE=150,ANJO_HALF=16,SWEEP_R=125;
 const NAV_STEP=16;
 let navCache=null;
 function hitWall(px,py,r){
@@ -127,7 +128,7 @@ function beginKitUse(q){
  if((q.kit||0)<1||q.hp>=q.mh||q.mg!=null||q.stuck>0||q.dash>0||q.gd>0)return;
  const m=Math.hypot(q.inp?.x||0,q.inp?.y||0);
  if(m>.05||(q.inp&&q.inp.r))return;
- q.kitUse=hasPk(q,6)?7:10;
+ q.kitUse=hasPk(q,5)?7:10;
 }
 // Solta o único medkit carregado em um ponto livre atrás/perto do jogador.
 function dropMedkit(q){
@@ -152,7 +153,7 @@ function startGame(){
  let k=0;
  for(const id of ids){const s=MP.sp[k++];
   G.pl[id]={n:lobby[id].n,role:id===hid?'h':'s',x:s[0],y:s[1],r:9,hp:id===hid?200:100,sta:id===hid?60:100,fatigue:0,inv:0,fl:0,s:0,mg:null,gc:0,kills:0,inp:{x:0,y:0,r:false},act:false,ci:k-1,gd:0,pk:(id===hid?lobby[id].ph:lobby[id].ps)||[],dr:0,mv:0,ch:id===hid?lobby[id].ki:lobby[id].sv,mh:id===hid?200:100,cd:0,bf:0,cn:0,cu:0,sl:0,sw:0,kit:0,kitUse:0,dash:0,dx:0,dy:0,stuck:0}}
- for(const q of Object.values(G.pl))if(q.role==='s'&&hasPk(q,4)){q.mh+=15;q.hp+=15}
+ for(const q of Object.values(G.pl))if(q.role==='s'&&hasPk(q,3)){q.mh+=15;q.hp+=15}
  inGame=true;disp={};closeMG();$('ov').classList.add('hide');sendAll({t:'go',m});show('gv');
 }
 function noise(nx,ny){
@@ -200,7 +201,7 @@ function hurtHunter(d){
 // Área do golpe: círculo curto (padrão), tentáculo em linha (Anjo) ou círculo da Varredura.
 function atkHit(h,q,kind,kc){
  if(kind==='sweep')return Math.hypot(q.x-h.x,q.y-h.y)<SWEEP_R;
- if(kc===4){const rx=q.x-h.x,ry=q.y-h.y,al=rx*h.wdx+ry*h.wdy,pe=Math.abs(rx*h.wdy-ry*h.wdx);return al>0&&al<ANJO_RANGE&&pe<ANJO_HALF+q.r&&los(h,q)}
+ if(kind==='tent'){const rx=q.x-h.x,ry=q.y-h.y,al=rx*h.wdx+ry*h.wdy,pe=Math.abs(rx*h.wdy-ry*h.wdx);return al>0&&al<ANJO_RANGE&&pe<ANJO_HALF+q.r&&los(h,q)}
  return Math.hypot(q.x-h.x,q.y-h.y)<h.r+q.r+22;
 }
 // O ataque começa com 0,45 s de preparação (o caçador anda bem devagar e a área vermelha aparece) e só então acerta.
@@ -208,17 +209,18 @@ function doAttack(kind){
  const h=G.h;if(h.cd>0||h.wu>0||h.stun>0||G.over)return;
  const killer=h.hid&&G.pl[h.hid];
  if(!(killer||G.ai))return;
+ if(!kind&&killer&&killer.ch===4&&killer.md)kind='tent'; // Anjo no modo tentáculo
  h.wu=ATK_WINDUP;h.wk=kind||0;h.wdx=h.fx||0;h.wdy=h.fy||0;
  if(!h.wdx&&!h.wdy)h.wdy=1;
  if(!killer){let bd=1e9;for(const q of Object.values(G.pl))if(q.role==='s'&&q.s===0){const d=Math.hypot(q.x-h.x,q.y-h.y);if(d<bd){bd=d;h.wdx=(q.x-h.x)/(d||1);h.wdy=(q.y-h.y)/(d||1)}}}
 }
 function resolveAttack(){
- const h=G.h,killer=h.hid&&G.pl[h.hid],kc=killer?killer.ch:0,kind=h.wk,damage=kind==='sweep'?10:(killer?(KILLER_DAMAGE[kc]||20):KILLER_DAMAGE[0]);
+ const h=G.h,killer=h.hid&&G.pl[h.hid],kc=killer?killer.ch:0,kind=h.wk,damage=kind==='sweep'?14:(kind==='tent'?TENT_DMG:(killer?(KILLER_DAMAGE[kc]||20):KILLER_DAMAGE[0]));
  h.wu=0;h.cd=ATK_CD;h.sw=.3;let landed=false;
  for(const q of Object.values(G.pl))if(q.role==='s'&&q.s===0&&!(q.inv>0)&&atkHit(h,q,kind,kc)){
   if(q.gd>0){q.gd=0;q.cd=25;q.sw=.4;hurtHunter(30);h.stun=1.5;h.sw=0;continue} // parry do Bombeiro
   landed=true;q.hp=Math.max(0,q.hp-damage);q.fl=.2;q.mg=null;q.kitUse=0;
-  if(kind==='sweep')q.sl=2.5;
+  if(kind==='sweep')q.sl=3;
   if(killer&&kc===0)h.fu=2;
   if(killer&&hasPk(killer,4))killer.cd=Math.max(0,killer.cd-2);
   if(q.hp<=0){q.s=1;if(killer)killer.kills++}
@@ -241,7 +243,7 @@ function sim(dt){
  for(const n of G.noises)n.t+=dt;G.noises=G.noises.filter(n=>n.t<1);
  G.ap=Math.max(0,G.ap-dt);if(G.mk){G.mk.t-=dt;const o=G.pl[G.mk.id];if(G.mk.t<=0||!o||o.s!==0)G.mk=null}
  for(const q of S){
-  q.inv=Math.max(0,q.inv-dt);q.cd=Math.max(0,q.cd-dt);q.bf=Math.max(0,q.bf-dt);q.sl=Math.max(0,q.sl-dt);q.sw=Math.max(0,q.sw-dt);q.stuck=Math.max(0,(q.stuck||0)-dt);if(q.adr>0)q.adr-=dt;if(!q.adrUsed&&q.hp>0&&q.hp<30&&hasPk(q,5)){q.adrUsed=1;q.adr=5}if(q.gd>0){q.gd-=dt;if(q.gd<=0){q.gd=0;q.cd=40;q.sta=0;q.fatigue=FATIGUE_TIME;q.rl=1}}if(q.mg==null)q.cu=0;else q.mv=0;
+  q.inv=Math.max(0,q.inv-dt);q.cd=Math.max(0,q.cd-dt);q.bf=Math.max(0,q.bf-dt);q.sl=Math.max(0,q.sl-dt);q.sw=Math.max(0,q.sw-dt);q.stuck=Math.max(0,(q.stuck||0)-dt);if(q.adr>0)q.adr-=dt;if(!q.adrUsed&&q.hp>0&&q.hp<30&&hasPk(q,4)){q.adrUsed=1;q.adr=5}if(q.gd>0){q.gd-=dt;if(q.gd<=0){q.gd=0;q.cd=40;q.sta=0;q.fatigue=FATIGUE_TIME;q.rl=1}}if(q.mg==null)q.cu=0;else q.mv=0;
   if(q.mg!=null){const g=G.gens[q.mg];if(g.done||Math.hypot(q.x-g.x,q.y-g.y)>60)q.mg=null}
   if(q.kitUse>0){
    const moving=Math.hypot(q.inp.x,q.inp.y)>.05;
@@ -289,8 +291,14 @@ function sim(dt){
    if(h.mem<=0){h.st='p';h.path=null;h.pathI=0;h.pathGoal=null}
   }
   if(h.rl&&h.sta>=20)h.rl=0;
+  // IA: percebe a guarda do Bombeiro com 0,15 s de atraso. Aí desiste do golpe (se já estava preparando) ou espera a guarda acabar.
+  const gS=S.filter(q=>q.gd>0&&Math.hypot(q.x-h.x,q.y-h.y)<h.r+q.r+60);
+  h.gt=gS.length?(h.gt||0)+dt:0;
+  const knows=h.gt>=.15;
+  if(knows){h.hold=gS.reduce((a,q)=>Math.max(a,q.gd),0)+.1;if(h.wu>0){h.wu=0;h.cd=Math.max(h.cd,.4)}}
+  if(h.hold>0)h.hold-=dt;
   const runAI=h.st==='c'&&!h.rl&&(h.fatigue||0)<=0&&h.sta>0&&h.stun<=0;
-  let sp=(h.st==='c'?(runAI?RUN_KI:100):h.st==='i'?85:68)*mul*(h.slow>0?.55:1)*((h.fatigue||0)>0?FATIGUE_SLOW:1)*(h.wu>0?WU_SLOW:1);
+  let sp=(h.st==='c'?(runAI?RUN_KI:100):h.st==='i'?85:68)*mul*(h.slow>0?.55:1)*((h.fatigue||0)>0?FATIGUE_SLOW:1)*(h.wu>0?WU_SLOW:1)*(h.hold>0&&gS.length?.2:1);
   updateStamina(h,dt,60,12,runAI);
   h.tired=(h.fatigue||0)>0?1:0;
   if(h.stun>0){h.stun-=dt;sp=0}
@@ -304,7 +312,7 @@ function sim(dt){
  h.cd=Math.max(0,h.cd-dt);h.sw=Math.max(0,h.sw-dt);h.slow=Math.max(0,h.slow-dt);
  if(h.wu>0){if(h.stun>0)h.wu=0;else{h.wu-=dt;if(h.wu<=0)resolveAttack()}}
  for(const q of S)q.fl=Math.max(0,q.fl-dt);
- if(G.ai&&S.some(q=>Math.hypot(q.x-h.x,q.y-h.y)<h.r+q.r+22))doAttack();
+ if(G.ai&&S.some(q=>Math.hypot(q.x-h.x,q.y-h.y)<h.r+q.r+22&&!(q.gd>0&&(h.gt||0)>=.15)))doAttack();
  // Se a vida do caçador chega a 0, ele morre e os sobreviventes vencem
  const hdead=(h.hid&&G.pl[h.hid]?G.pl[h.hid].hp:h.hp)<=0;
  if(hdead){h.dead=1;h.mv=0}
